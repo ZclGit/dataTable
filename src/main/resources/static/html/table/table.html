@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="../../css/bootstrap/bootstrap.css">
+</head>
+<body>
+<h4 class="text-center">Add</h4>
+<div class="text-center">
+<input type="text" id="userName" placeholder="姓名">
+<input type="text" id="phone" placeholder="电话">
+<button type="button" onclick="add()">Add</button>&nbsp;
+<button type="button" onclick="batchAdd()">BatchAdd+10</button>&nbsp;
+<button type="button" onclick="batchDelete()">Delete</button>&nbsp;
+<span id="msg"></span>
+</div>
+<a href="/demo/main">return</a><h4 class="text-center">Table</h4>
+<table id="table" class="table table-bordered table-striped table-hover text-center">
+    <thead>
+        <tr>
+            <th class="text-center">序号</th>
+            <th class="text-center">姓名</th>
+            <th class="text-center">电话</th>
+        </tr>
+    </thead>
+    <tbody id="tabBody"></tbody>
+</table>
+<nav aria-label="Page navigation" class="text-center">
+    <ul class="pagination pagination-lg" id="pageBar"></ul>
+</nav>
+<script src="../../js/jquery/jquery-1.11.1.min.js"></script>
+<script src="../../js/bootstrap/bootstrap.js"></script>
+<script>
+    $(function () {
+        showTable(1);
+    });
+    function showTable(pNum){
+        var pageNum = pNum || 1;
+        var pageSize = 10;
+        var dat = {
+            "pageNum":pageNum,
+            "pageSize":pageSize
+        };
+        $("#tabBody>*").remove();
+        $("#pageBar>*").remove();
+        $.ajax({
+            type:"post",
+            url:"/demo/user/getAllUserLimit",
+            contentType:"application/json;charset=utf-8",
+            data:JSON.stringify(dat),
+            success:function(json) {
+                var data = json.data;
+                var pages = json.pages;
+                if(pageNum < 1){
+                    pageNum = 1;
+                }else if(pageNum > pages){
+                    pageNum = pages;
+                }
+                var serialNum = (pageNum - 1) * pageSize + 1;
+                if(data.length < 1){
+                    $("#tabBody").append('<tr><td class="text-center" colspan="3">暂无数据</td></tr>');
+                }
+                for(var i = 0; i < data.length; i++) {
+                    var jsonStr = "";
+                    var simpleData = data[i];
+                    jsonStr += '<tr>';
+                    jsonStr += '<td>'+(serialNum++)+'</td>';
+                    jsonStr += '<td>'+simpleData.userName+'</td>';
+                    jsonStr += '<td>'+simpleData.phone+'</td>';
+                    jsonStr += '</tr>';
+                    $("#tabBody").append(jsonStr);
+                }
+                var jsonPrev = "";
+                if(pageNum === 1){
+                    jsonPrev+='<li class="disabled">';
+                }else{
+                    jsonPrev+='<li>';
+                }
+                jsonPrev+='    <a href="javaScript:showTable('+(pageNum-1)+');" aria-label="Previous">';
+                jsonPrev+='        <span aria-hidden="true">&laquo;</span>';
+                jsonPrev+='    </a>';
+                jsonPrev+='</li>';
+                var jsonNext = "";
+                if(pageNum === pages){
+                    jsonNext+='<li class="disabled">';
+                }else{
+                    jsonNext+='<li>';
+                }
+                jsonNext+='    <a href="javaScript:showTable('+(pageNum+1)+');" aria-label="Next">';
+                jsonNext+='        <span aria-hidden="true">&raquo;</span>';
+                jsonNext+='    </a>';
+                jsonNext+='</li>';
+                $("#pageBar").append(jsonPrev);
+                for(var j = 1; j <= pages; j++) {
+                    var jsonPageNum = "";
+                    if(j === pageNum){
+                        jsonPageNum+='<li class="active"><a href="javaScript:showTable('+j+');">'+j+'</a></li>';
+                    }else{
+                        jsonPageNum+='<li><a href="javaScript:showTable('+j+');">'+j+'</a></li>';
+                    }
+                    $("#pageBar").append(jsonPageNum);
+                }
+                $("#pageBar").append(jsonNext);
+            }
+        })
+    }
+    function add(){
+        var userName = $("#userName").val();
+        var phone = $("#phone").val();
+        var data = {
+            "userName":userName,
+            "phone":phone
+        };
+        $.ajax({
+            type:"post",
+            url:"/demo/user/addUser",
+            contentType:"application/json;charset=utf-8",
+            data:JSON.stringify(data),
+            success:function (json) {
+                if(json.result > 0){
+                    $("#msg").text("add success");
+                    showTable();
+                }else{
+                    $("#msg").text("add fail");
+                }
+            }
+        })
+    }
+    function batchAdd(){
+        $.ajax({
+            type:"post",
+            url:"/demo/user/batchAddUser",
+            success:function(json) {
+                if(json.result > 0){
+                    $("#msg").text("add success");
+                    showTable();
+                }else{
+                    $("#msg").text("add fail");
+                }
+            }
+        })
+
+    }
+    function batchDelete() {
+        var dat = {
+            "sinceNum": 8
+        }
+        $.ajax({
+            type:"post",
+            url:"/demo/user/batchDelete",
+            contentType:"application/json;charset=utf-8",
+            data:JSON.stringify(dat),
+            success:function(json){
+                if(json.result > 0) {
+                    $("#msg").text("del success");
+                }else{
+                    $("#msg").text("del fail");
+                }
+            }
+        })
+    }
+</script>
+</body>
+</html>

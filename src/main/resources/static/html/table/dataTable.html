@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../../css/dataTable/jquery.dataTables.css">
+</head>
+<style>
+    .dataTable{
+        text-align: center;
+    }
+    .color{
+        color: red;
+    }
+</style>
+<body>
+<table id="dataTable"></table>
+<script src="../../js/jquery/jquery-1.8.3.min.js"></script>
+<script src="../../js/dataTable/jquery.dataTables.js"></script>
+<script>
+    $(document).ready(function(){
+        $("#dataTable").DataTable({
+            "paging":true,//开启分页
+            "serverSide":false,//开启物理分页
+            "pageLength": 10,//每页行数
+            "pagingType":"simple_numbers",//分页栏样式
+            ajax:{
+                type:"post",
+                url:"/demo/user/getAllUser",
+                contentType:"application/json;charset=utf-8",
+                data:function (data) {//同$.ajax中,data
+                  console.log(data);
+                  data = {};
+                  data.pageNum = 1;
+                  data.pageSize = 10;
+                  console.log(data);
+                  return JSON.stringify(data);
+                },
+                dataSrc:function (json) { //同$.ajax,success方法,将数据返回给dt
+                    console.log(json);
+                    return json.data;
+                }
+                //ajax:"/demo/user/getAllUser",
+            },
+                columns:[
+                    {
+                        data:null, //将该列数据暂时置为null
+                        name:"serialNum",//为该列取名,方便后续通过location.name调用
+                        title:"序号",//表头名
+                        className:"text-center",//为该列添加class属性
+                        render:function (data,type,row,meta) {//对该列数据进行处理后,绘制到页面
+                            return meta.row;
+                        }
+                    },
+                    {
+                        data:null,
+                        name:"userName",
+                        title:"姓名",
+                        className:"text-center",
+                        render:function (data,type,row,meta) {
+                            // console.log(row);
+                            return data.userName;
+                        }
+                    },
+                    {
+                        data:null,
+                        name:"phone",
+                        title:"电话",
+                        className:"text-center",
+                        render:function (data,type,row,meta) {
+                            return row.phone;
+                        }
+                    }
+                ],
+                createdRow:function (row, data, dataIndex){ //创建行时的回调函数,用于对行进行特殊处理
+                    console.log(row);
+                    if(row.firstChild.textContent === "0"){
+                        $(row).addClass('color');
+                    }
+                    var tags = $(row).find("td:eq(0)");
+                    $.each(tags,function (i,d) {
+                        if($(d).text().indexOf("1") > 0){
+                            $(row).addClass('color');
+                        }
+                    })
+                }
+                //stripeClasses: [ 'strip1', 'strip2', 'strip3' ] //斑马线
+                // ,order:[[0,'asc']] //初始排序
+                //,orderFixed:[[0,'asc']] //固定排序
+
+        })
+    })
+</script>
+</body>
+</html>
