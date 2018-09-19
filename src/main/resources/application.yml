@@ -8,8 +8,7 @@ spring:
     druid:
       username: root
       password: mysql
-      url: jdbc:mysql://127.0.0.1:3306/ctest?useUnicode=true&characterEncoding=utf-8
-      driver-class-name: com.mysql.jdbc.Driver
+      url: jdbc:mysql://127.0.0.1:3306/ctest?useUnicode=true&characterEncoding=utf-8&serverTimezone=UTC
       initial-size: 1
       min-idle: 1
       max-active: 10
@@ -21,6 +20,7 @@ spring:
       test-on-return: false
       filters: stat,wall,log4j
       connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+      driver-class-name: com.mysql.cj.jdbc.Driver
 
 mybatis:
   mapper-locations: classpath:mapping/*.xml  #注意：一定要对应mapper映射xml文件的所在路径
