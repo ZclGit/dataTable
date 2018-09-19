@@ -9,8 +9,11 @@
     .dataTable{
         text-align: center;
     }
-    .color{
+    .red{
         color: red;
+    }
+    .blue{
+        color: blue;
     }
 </style>
 <body>
@@ -21,23 +24,22 @@
     $(document).ready(function(){
         $("#dataTable").DataTable({
             "paging":true,//开启分页
-            "serverSide":false,//开启物理分页
+            "serverSide":true,//开启物理分页
             "pageLength": 10,//每页行数
             "pagingType":"simple_numbers",//分页栏样式
             ajax:{
                 type:"post",
-                url:"/demo/user/getAllUser",
+                async:false,
+                url:"/demo/user/getAllUserLimit",
                 contentType:"application/json;charset=utf-8",
                 data:function (data) {//同$.ajax中,data
                   console.log(data);
                   data = {};
                   data.pageNum = 1;
                   data.pageSize = 10;
-                  console.log(data);
                   return JSON.stringify(data);
                 },
                 dataSrc:function (json) { //同$.ajax,success方法,将数据返回给dt
-                    console.log(json);
                     return json.data;
                 }
                 //ajax:"/demo/user/getAllUser",
@@ -49,7 +51,7 @@
                         title:"序号",//表头名
                         className:"text-center",//为该列添加class属性
                         render:function (data,type,row,meta) {//对该列数据进行处理后,绘制到页面
-                            return meta.row;
+                             return meta.row + 1 + meta.settings._iDisplayStart;
                         }
                     },
                     {
@@ -73,17 +75,23 @@
                     }
                 ],
                 createdRow:function (row, data, dataIndex){ //创建行时的回调函数,用于对行进行特殊处理
-                    console.log(row);
-                    if(row.firstChild.textContent === "0"){
-                        $(row).addClass('color');
+                    if(row.firstChild.textContent === "3"){
+                        $(row).addClass('red');
                     }
                     var tags = $(row).find("td:eq(0)");
                     $.each(tags,function (i,d) {
-                        if($(d).text().indexOf("1") > 0){
-                            $(row).addClass('color');
+                        if($(d).text().indexOf("1") === 0){
+                            $(row).addClass('blue');
                         }
                     })
                 }
+                 /*, drawCallback:function () {//第一列显示序号
+                     var api = this.api();
+                     var startIndex = api.context[0]._iDisplayStart;//获取本页开始的条数
+                     api.column(0).nodes().each(function (cell, i) {//遍历本页所有行
+                         cell.innerHTML = startIndex + i + 1;
+                     });
+                 }*/
                 //stripeClasses: [ 'strip1', 'strip2', 'strip3' ] //斑马线
                 // ,order:[[0,'asc']] //初始排序
                 //,orderFixed:[[0,'asc']] //固定排序
